@@ -65,6 +65,7 @@
 			"ucrt",
 			"USERPROFILE"
 		],
+		"todo-tree.ripgrep": "C:\\msys64\\ucrt64\\bin\\rg.exe",
 		"todo-tree.general.showIconsInsteadOfTagsInStatusBar": false,
 		"todo-tree.general.statusBar": "top three",
 		"todo-tree.tree.groupedByTag": true,

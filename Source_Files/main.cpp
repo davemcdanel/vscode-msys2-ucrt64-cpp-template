@@ -5,7 +5,7 @@
  * @mainpage Hello World! - For C++
  * @version @b $(VERSION_STRING)
  * @brief C++ edition of the classic Hello World program. This version is used to test VSCODE with MSYS2/UCRT64 and GCC but should compile on most versions of C++.
- * @author David Lee McDanel <smokepid@gmail.com>; <pidsynccontrol@gmail.com>; 54825816+davemcdanel@users.noreply.github.com
+ * @author David Lee McDanel <smokepid@gmail.com>; <pidsynccontrol@gmail.com>; <54825816+davemcdanel@users.noreply.github.com>
  * @date June 5, 2016, 9:36 
  * @copyright Copyright (c) 2025 David Lee McDanel
  * @n @n This is free and unencumbered software released into the public domain under the Unlicense (see LICENSE.md).
@@ -119,8 +119,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Program ending." << std::endl;
     if (argc >=3){return 0;}
     std::cout << "Press ENTER to continue..." << std::endl;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.get();
 
+    // ...existing code...
     return 0;
 }

@@ -5,6 +5,6 @@
  */
 #ifndef VERSION_H
 #define VERSION_H
-#define VERSION_STRING "0.51.1"
-#define BUILD_ID "20250907-18:32:44"
+#define VERSION_STRING "0.53.5"
+#define BUILD_ID "20261121-10:11:11"
 #endif
