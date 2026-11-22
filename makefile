@@ -29,7 +29,7 @@ DEPENDENCY_FILES := $(OBJECT_FILES:.o=.d)
 -include $(DEPENDENCY_FILES)
 
 # Version extraction
-VERSION := $(shell grep 'define VERSION_STRING' $(HEADER_DIR)/version.h | sed 's/.*VERSION_STRING "\(.*\)"/\1/')
+VERSION = $(shell grep 'define VERSION_STRING' $(HEADER_DIR)/version.h | sed 's/.*VERSION_STRING "\(.*\)"/\1/')
 export VERSION_STRING=$(VERSION)
 
 # Platform-specific settings
@@ -164,7 +164,7 @@ docs-init:
 	@echo "$(DOCUMENT_DIR)/PlaceHolder.txt initialized."
 
 # Documentation generation
-docs: docs-clean docs-init Doxyfile
+docs: docs-clean docs-init update-version Doxyfile
 	@sed -i '/^INPUT[ \t]*=/c\INPUT = . $(shell cygpath -w $(SOURCE_DIR)) $(shell cygpath -w $(HEADER_DIR))' Doxyfile || echo "INPUT = . $(shell cygpath -w $(SOURCE_DIR)) $(shell cygpath -w $(HEADER_DIR))" >> Doxyfile
 	@sed -i '/^OUTPUT_DIRECTORY[ \t]*=/c\OUTPUT_DIRECTORY = $(shell cygpath -w $(DOCUMENT_DIR))' Doxyfile || echo "OUTPUT_DIRECTORY = $(shell cygpath -w $(DOCUMENT_DIR))" >> Doxyfile
 	@sed -i '/^PROJECT_NUMBER[ \t]*=/c\PROJECT_NUMBER = \"$(VERSION)\"' Doxyfile || echo "PROJECT_NUMBER = \"$(VERSION)\"" >> Doxyfile
