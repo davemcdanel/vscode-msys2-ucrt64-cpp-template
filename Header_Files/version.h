@@ -1,10 +1,8 @@
 /** @file version.h
- * @brief Auto-generated version file. Do not edit manually.
- * @copyright Copyright (c) 2025 David Lee McDanel
- * @n @n This is free and unencumbered software released into the public domain under the Unlicense (see LICENSE.md).
+ * @brief Git-generated version file. Do not edit manually.
  */
 #ifndef VERSION_H
 #define VERSION_H
-#define VERSION_STRING "0.55.5"
-#define BUILD_ID "20261121-22:10:02"
+#define VERSION_STRING "0.0.0-dev.56+g20a61b9-dirty"
+#define BUILD_ID "20261121-23:10:47"
 #endif

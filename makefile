@@ -12,6 +12,7 @@ BUILD_ROOT = $(shell pwd)
 BUILD_ID = $(shell date +%Y%m%d-%H:%M:%S)
 COMMIT_MSG ?= "Automatic commit of successful build."
 PLATFORM ?= "console"
+RELEASE_REMOTE ?= origin
 
 # Directory structure
 SOURCE_DIR = Source_Files
@@ -75,7 +76,7 @@ else
 endif
 
 # Phony list
-.PHONY: all update-version clean verify-tools  docs-clean docs-init docs commit push pull release run install uninstall test
+.PHONY: all update-version release-patch release-minor release-major clean verify-tools docs-clean docs-init docs commit push pull release run install uninstall test
 
 # Primary build target
 all: verify-tools update-version $(BINARY_DIR)/$(TARGET_EXE)
@@ -94,25 +95,58 @@ $(OBJECT_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 	@echo "Compiled $< into $@"
 
 # Version management
-update-version: $(HEADER_DIR)/version.h
-	@CURRENT_BRANCH=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "none"); \
-	if [ "$$CURRENT_BRANCH" != "main" ] && [ "$$CURRENT_BRANCH" != "none" ]; then \
-		echo "Warning: Not on main branch, using last known version"; \
-	fi; \
-	CURRENT_VER=$$(grep 'define VERSION_STRING' $(HEADER_DIR)/version.h | sed 's/.*VERSION_STRING "\(.*\)"/\1/'); \
-	MAJOR=$$(echo $$CURRENT_VER | cut -d'.' -f1); \
-	MINOR=$$(echo $$CURRENT_VER | cut -d'.' -f2); \
-	PATCH=$$(echo $$CURRENT_VER | cut -d'.' -f3); \
-	COMMIT_COUNT=$$(git rev-list --count main 2>/dev/null || echo $$MINOR); \
-	if [ "$$COMMIT_COUNT" -ne "$$MINOR" ]; then \
-		NEW_PATCH=0; \
+update-version:
+	@GIT_DESC=$$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --long 2>/dev/null); \
+	if [ -n "$$GIT_DESC" ]; then \
+		TAG=$$(echo "$$GIT_DESC" | sed 's/-[0-9]*-g[0-9a-f]*$$//'); \
+		COUNT=$$(echo "$$GIT_DESC" | sed 's/^.*-\([0-9]*\)-g[0-9a-f]*$$/\1/'); \
+		HASH=$$(git rev-parse --short HEAD); \
+		BASE=$$(echo "$$TAG" | sed 's/^v//'); \
 	else \
-		NEW_PATCH=$$((PATCH + 1)); \
+		BASE="0.0.0"; \
+		COUNT=$$(git rev-list --count HEAD 2>/dev/null || echo "0"); \
+		HASH=$$(git rev-parse --short HEAD 2>/dev/null || echo "nogit"); \
 	fi; \
-	NEW_VER="$$MAJOR.$$COMMIT_COUNT.$$NEW_PATCH"; \
-	sed -i "s/VERSION_STRING \".*\"/VERSION_STRING \"$$NEW_VER\"/" $(HEADER_DIR)/version.h; \
-	sed -i "s/BUILD_ID \".*\"/BUILD_ID \"$(BUILD_ID)\"/" $(HEADER_DIR)/version.h; \
+	DIRTY=$$(git status --porcelain --untracked-files=normal | \
+		sed '/^[^ ]* Doxyfile$$/d; /^[^ ]* Header_Files\/version\.h$$/d' | grep -q . && echo "-dirty" || true); \
+	if [ "$$COUNT" = "0" ] && [ -z "$$DIRTY" ]; then \
+		NEW_VER="$$BASE+g$$HASH"; \
+	else \
+		NEW_VER="$$BASE-dev.$$COUNT+g$$HASH$$DIRTY"; \
+	fi; \
+	$(CREATE_DIR) $(HEADER_DIR); \
+	printf '/** @file version.h\n * @brief Git-generated version file. Do not edit manually.\n */\n#ifndef VERSION_H\n#define VERSION_H\n#define VERSION_STRING "%s"\n#define BUILD_ID "%s"\n#endif\n' "$$NEW_VER" "$(BUILD_ID)" > $(HEADER_DIR)/version.h; \
 	echo "Updated $(HEADER_DIR)/version.h to version $$NEW_VER and build ID $(BUILD_ID)";
+
+release-patch:
+	@LATEST=$$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0"); \
+	MAJOR=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f1); \
+	MINOR=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f2); \
+	PATCH=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f3); \
+	PATCH=$$((PATCH + 1)); \
+	TAG="v$$MAJOR.$$MINOR.$$PATCH"; \
+	git tag -a "$$TAG" -m "Release $$TAG" && \
+	git push $(RELEASE_REMOTE) "$$TAG" || exit 1; \
+	echo "Created and pushed $$TAG"
+
+release-minor:
+	@LATEST=$$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0"); \
+	MAJOR=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f1); \
+	MINOR=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f2); \
+	MINOR=$$((MINOR + 1)); \
+	TAG="v$$MAJOR.$$MINOR.0"; \
+	git tag -a "$$TAG" -m "Release $$TAG" && \
+	git push $(RELEASE_REMOTE) "$$TAG" || exit 1; \
+	echo "Created and pushed $$TAG"
+
+release-major:
+	@LATEST=$$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0"); \
+	MAJOR=$$(echo "$$LATEST" | sed 's/^v//' | cut -d. -f1); \
+	MAJOR=$$((MAJOR + 1)); \
+	TAG="v$$MAJOR.0.0"; \
+	git tag -a "$$TAG" -m "Release $$TAG" && \
+	git push $(RELEASE_REMOTE) "$$TAG" || exit 1; \
+	echo "Created and pushed $$TAG"
 
 $(HEADER_DIR)/version.h:
 	@$(CREATE_DIR) $(HEADER_DIR)
@@ -180,10 +214,10 @@ commit:
 	git commit -m "$(COMMIT_MSG) Build:$(BUILD_ID)"
 
 push:
-	@git push origin master
+	@git push $(RELEASE_REMOTE) main
 
 pull:
-	@git pull origin master
+	@git pull $(RELEASE_REMOTE) main
 
 release: all test commit push
 	@echo "Released tested build with Git sync."

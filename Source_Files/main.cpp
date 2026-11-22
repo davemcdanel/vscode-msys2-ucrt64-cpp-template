@@ -16,6 +16,10 @@
 #include <string>
 #include <limits>
 
+/**
+ * @todo The version system needs a re-write.
+ * Major and minor versions should be manually triggered and the build number should be auto-incremented. 
+ */
 #ifndef VERSION_STRING
     #error "Version not set.  Please configure makefile VERSION_STRING="
 #endif
