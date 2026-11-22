@@ -46,6 +46,38 @@
                 "cwd": "${workspaceFolder}"
             },
             "detail": "Generates Doxygen documentation in DOCDIR."
+        },
+        {
+            "type": "shell",
+            "label": "Make Release-Major",
+            "command": "C:\\msys64\\usr\\bin\\make.exe",
+            "args": ["release-major"],
+            "problemMatcher": [],
+            "presentation": {"echo": true, "reveal": "always", "focus": false, "panel": "shared", "showReuseMessage": false, "clear": true},
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "detail": "Generates a new major release."
+        },
+        {
+            "type": "shell",
+            "label": "Make Release-Minor",
+            "command": "C:\\msys64\\usr\\bin\\make.exe",
+            "args": ["release-minor"],
+            "problemMatcher": [],
+            "presentation": {"echo": true, "reveal": "always", "focus": false, "panel": "shared", "showReuseMessage": false, "clear": true},
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "detail": "Generates a new minor release."
         }
     ],
     "version": "2.0.0"
